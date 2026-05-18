@@ -1,0 +1,182 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+  color: #222;
+}
+
+nav {
+  background: #003366;
+  padding: 12px 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+main {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+h1 {
+  color: #003366;
+}
+
+input, select, button {
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  background: #003366;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #004080;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  margin-top: 20px;
+}
+
+th {
+  background: #003366;
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+  background: #f0f0f0;
+  cursor: pointer;
+}
+
+.class-i   { color: red;    font-weight: bold; }
+.class-ii  { color: orange; font-weight: bold; }
+.class-iii { color: green;  font-weight: bold; }
+
+#status {
+  margin-top: 10px;
+  color: #555;
+  font-style: italic;
+}
+
+/* Modal */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.modal-bg.open {
+  display: flex;
+}
+
+.modal {
+  background: white;
+  padding: 24px;
+  border-radius: 6px;
+  max-width: 560px;
+  width: 90%;
+  position: relative;
+}
+
+.modal h2 { margin-top: 0; }
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+}
+
+/* Saved cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.card h3 { margin: 0 0 8px; font-size: 15px; }
+.card p  { margin: 4px 0; font-size: 13px; color: #555; }
+
+.remove-btn {
+  margin-top: 10px;
+  background: #cc0000;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-size: 13px;
+  margin-top: 40px;
+  border-top: 1px solid #ddd;
+}
+
+/* DataTables overrides */
+.dataTables_wrapper {
+  margin-top: 10px;
+  font-size: 14px;
+}
+.dataTables_wrapper .dataTables_filter { display: none; } /* we use our own search */
+table.dataTable thead th {
+  background: #003366;
+  color: white;
+}
+.clickable-row { cursor: pointer; }
+
+/* Search bar layout */
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}

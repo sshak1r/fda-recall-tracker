@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Charts — FDA Recall Tracker</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="charts.html">Charts</a>
+  <a href="saved.html">Saved</a>
+  <a href="about.html">About</a>
+</nav>
+
+<main>
+  <h1>Recall Analytics</h1>
+  <p id="status">Loading charts...</p>
+
+  <h2>Recalls by Classification</h2>
+  <canvas id="classChart" width="600" height="300"></canvas>
+
+  <h2>Top 10 States</h2>
+  <canvas id="stateChart" width="600" height="300"></canvas>
+</main>
+
+<footer>
+  Data from <a href="https://open.fda.gov">openFDA</a> · INST 377 · UMD 2026
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="app.js"></script>
+<script>
+  async function loadCharts() {
+    const [classRes, stateRes] = await Promise.all([
+      fetch('/api/recalls?count=classification.exact'),
+      fetch('/api/recalls?count=state.exact&limit=10')
+    ]);
+
+    const classData = await classRes.json();
+    const stateData = await stateRes.json();
+
+    document.getElementById('status').textContent = '';
+
+    // Classification chart
+    const cls = classData.results || [];
+    new Chart(document.getElementById('classChart'), {
+      type: 'bar',
+      data: {
+        labels: cls.map(c => c.term),
+        datasets: [{ label: 'Recalls', data: cls.map(c => c.count),
+          backgroundColor: ['#cc0000','#ff8800','#007700'] }]
+      }
+    });
+
+    // State chart
+    const states = (stateData.results || []).slice(0, 10);
+    new Chart(document.getElementById('stateChart'), {
+      type: 'bar',
+      data: {
+        labels: states.map(s => s.term),
+        datasets: [{ label: 'Recalls', data: states.map(s => s.count),
+          backgroundColor: '#003366' }]
+      },
+      options: { indexAxis: 'y' }
+    });
+  }
+
+  loadCharts();
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saved Recalls — FDA Recall Tracker</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="charts.html">Charts</a>
+  <a href="saved.html">Saved</a>
+  <a href="about.html">About</a>
+</nav>
+
+<main>
+  <h1>Saved Recalls</h1>
+  <p id="status">Loading...</p>
+  <div class="card-grid" id="cardGrid"></div>
+</main>
+
+<footer>
+  Data from <a href="https://open.fda.gov">openFDA</a> · INST 377 · UMD 2026
+</footer>
+
+<script src="app.js"></script>
+<script>
+  async function load() {
+    const res  = await fetch('/api/saved');
+    const data = await res.json();
+
+    document.getElementById('status').textContent = data.length + ' saved recalls.';
+
+    if (!data.length) {
+      document.getElementById('status').textContent = 'No saved recalls yet. Go search and save some!';
+      return;
+    }
+
+    document.getElementById('cardGrid').innerHTML = data.map(r => `
+      <div class="card">
+        <h3>${(r.product_description || '').slice(0, 80)}</h3>
+        <p><strong>Company:</strong> ${r.recalling_firm || '—'}</p>
+        <p><strong>Class:</strong> ${r.classification || '—'}</p>
+        <p><strong>State:</strong> ${r.state || '—'}</p>
+        <p><strong>Date:</strong> ${formatDate(r.report_date)}</p>
+        <button class="remove-btn" onclick="removeRecall('${r.event_id}', this)">Remove</button>
+      </div>
+    `).join('');
+  }
+
+  async function removeRecall(id, btn) {
+    await fetch('/api/saved/' + id, { method: 'DELETE' });
+    btn.closest('.card').remove();
+  }
+
+  load();
+</script>
+</body>
+</html>

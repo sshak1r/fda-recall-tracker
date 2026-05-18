@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FDA Recall Tracker</title>
+  <!-- DataTables CSS (JS Library #2) -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="charts.html">Charts</a>
+  <a href="saved.html">Saved</a>
+  <a href="about.html">About</a>
+</nav>
+
+<main>
+  <h1>FDA Food Recall Search</h1>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search product or company..." />
+    <select id="classFilter">
+      <option value="">All Classes</option>
+      <option value="Class I">Class I</option>
+      <option value="Class II">Class II</option>
+      <option value="Class III">Class III</option>
+    </select>
+    <select id="stateFilter">
+      <option value="">All States</option>
+      <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+      <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+      <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+      <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+      <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+      <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+      <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+      <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+      <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+      <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+      <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+      <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+      <option>WI</option><option>WY</option>
+    </select>
+    <button onclick="doSearch()">Search</button>
+    <button onclick="clearFilters()">Clear</button>
+  </div>
+
+  <p id="status">Enter a search to begin.</p>
+
+  <!-- DataTables will enhance this table with pagination and sorting -->
+  <table id="resultsTable" class="display" style="width:100%">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Company</th>
+        <th>Class</th>
+        <th>State</th>
+        <th>Date</th>
+        <th>Save</th>
+      </tr>
+    </thead>
+    <tbody id="resultsBody"></tbody>
+  </table>
+</main>
+
+<!-- Detail Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal()">✕</button>
+    <h2 id="mProduct"></h2>
+    <p><strong>Company:</strong> <span id="mFirm"></span></p>
+    <p><strong>Classification:</strong> <span id="mClass"></span></p>
+    <p><strong>State:</strong> <span id="mState"></span></p>
+    <p><strong>Date:</strong> <span id="mDate"></span></p>
+    <p><strong>Distribution:</strong> <span id="mDist"></span></p>
+    <p><strong>Reason:</strong> <span id="mReason"></span></p>
+    <button onclick="saveCurrentRecall()">Save Recall</button>
+  </div>
+</div>
+
+<footer>
+  Data from <a href="https://open.fda.gov">openFDA</a> · INST 377 · UMD 2026
+</footer>
+
+<!-- jQuery (required by DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<!-- DataTables — JS Library #2 (adds pagination + sorting to the results table) -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- Shared helpers -->
+<script src="app.js"></script>
+<script>
+  let recalls = [];
+  let current = null;
+  let dtTable = null;
+
+  async function doSearch() {
+    const search = document.getElementById('searchInput').value.trim();
+    const cls    = document.getElementById('classFilter').value;
+    const state  = document.getElementById('stateFilter').value;
+
+    document.getElementById('status').textContent = 'Loading...';
+
+    // Fetch #1 — GET /api/recalls (external FDA data via backend)
+    const params = new URLSearchParams({ limit: 100 });
+    if (search) params.set('search', search);
+    if (cls)    params.set('classification', cls);
+    if (state)  params.set('state', state);
+
+    const res  = await fetch('/api/recalls?' + params);
+    const data = await res.json();
+    recalls = data.results || [];
+
+    // Destroy old DataTable before re-rendering
+    if (dtTable) { dtTable.destroy(); dtTable = null; }
+
+    const tbody = document.getElementById('resultsBody');
+    tbody.innerHTML = recalls.map((r, i) => `
+      <tr class="clickable-row" data-i="${i}">
+        <td>${(r.product_description || '').slice(0, 60)}...</td>
+        <td>${r.recalling_firm || '—'}</td>
+        <td>${classLabel(r.classification)}</td>
+        <td>${r.state || '—'}</td>
+        <td>${formatDate(r.report_date)}</td>
+        <td><button onclick="event.stopPropagation(); quickSave(${i}, this)">Save</button></td>
+      </tr>
+    `).join('');
+
+    // Initialize DataTables for pagination and column sorting
+    dtTable = $('#resultsTable').DataTable({ pageLength: 10, searching: false });
+
+    // Row click opens detail modal
+    document.querySelectorAll('.clickable-row').forEach(row => {
+      row.addEventListener('click', () => openModal(+row.dataset.i));
+    });
+
+    document.getElementById('status').textContent = `${recalls.length} results shown.`;
+  }
+
+  function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('classFilter').value = '';
+    document.getElementById('stateFilter').value = '';
+  }
+
+  function openModal(i) {
+    current = recalls[i];
+    document.getElementById('mProduct').textContent = current.product_description || '—';
+    document.getElementById('mFirm').textContent    = current.recalling_firm      || '—';
+    document.getElementById('mClass').innerHTML     = classLabel(current.classification);
+    document.getElementById('mState').textContent   = current.state               || '—';
+    document.getElementById('mDate').textContent    = formatDate(current.report_date);
+    document.getElementById('mDist').textContent    = current.distribution_pattern|| '—';
+    document.getElementById('mReason').textContent  = current.reason_for_recall   || '—';
+    document.getElementById('modalBg').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalBg').classList.remove('open');
+  }
+
+  async function saveCurrentRecall() {
+    if (!current) return;
+    // Fetch #2 — POST /api/saved (writes to Supabase via backend)
+    await saveRecall(current);
+    alert('Recall saved!');
+    closeModal();
+  }
+
+  async function quickSave(i, btn) {
+    // Fetch #2 — POST /api/saved (writes to Supabase via backend)
+    await saveRecall(recalls[i]);
+    btn.textContent = '✓';
+  }
+</script>
+</body>
+</html>

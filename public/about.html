@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About — FDA Recall Tracker</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="charts.html">Charts</a>
+  <a href="saved.html">Saved</a>
+  <a href="about.html">About</a>
+</nav>
+
+<main>
+  <h1>About This Project</h1>
+
+  <h2>What It Does</h2>
+  <p>RecallWatch lets you search, filter, and visualize FDA food recall data. You can save recalls to a personal watchlist stored in a database.</p>
+
+  <h2>Tech Stack</h2>
+  <ul>
+    <li><strong>Backend:</strong> Node.js + Express</li>
+    <li><strong>Database:</strong> Supabase (PostgreSQL)</li>
+    <li><strong>External API:</strong> openFDA Food Enforcement API</li>
+    <li><strong>Charts:</strong> Chart.js</li>
+    <li><strong>Hosting:</strong> Vercel</li>
+  </ul>
+
+  <h2>API Endpoints</h2>
+  <ul>
+    <li><strong>GET /api/recalls</strong> — Search FDA recall data</li>
+    <li><strong>GET /api/saved</strong> — Get saved recalls from database</li>
+    <li><strong>POST /api/saved</strong> — Save a recall to database</li>
+    <li><strong>DELETE /api/saved/:id</strong> — Remove a saved recall</li>
+  </ul>
+
+  <h2>Target Browsers</h2>
+  <p>Chrome, Firefox, Safari, and Edge (latest versions). Works on mobile too.</p>
+
+  <h2>Team</h2>
+  <p>Built for INST 377 at the University of Maryland, Spring 2026.</p>
+  <p>Sabir Shakir</p>
+</main>
+
+<footer>
+  Data from <a href="https://open.fda.gov">openFDA</a> · INST 377 · UMD 2026
+</footer>
+
+</body>
+</html>
